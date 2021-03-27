@@ -20,14 +20,14 @@ If you wish to report an issue or make a request for a Bincrafters package, plea
 
 ### Basic setup
 
-    $ conan install cef/3.3578.1860.g36610bd@bincrafters/testing
+    $ conan install cef/3.3578.1860.g36610bd@master/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
     [requires]
-    cef/3.3578.1860.g36610bd@bincrafters/testing
+    cef/3.3578.1860.g36610bd@master/stable
 
     [generators]
     cmake
@@ -43,7 +43,7 @@ Note: It is recommended that you run conan install from a build directory and no
 
 The following command both runs all the steps of the conan file, and publishes the package to the local system cache.  This includes downloading dependencies from "build_requires" and "requires" , and then running the build() method.
 
-    $ conan create . bincrafters/testing -s build_type=Release
+    $ conan create . master/stable --profile=clang -s build_type=Release
 
 
 ### Available Options
