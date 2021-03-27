@@ -48,7 +48,7 @@ class CEFConan(ConanFile):
         self.output.info("Downloading CEF prebuilts from opensource.spotify.com/cefbuilds/index.html")
 
         cef_download_filename ="{}.tar.bz2".format(self.get_cef_distribution_name())
-        archive_url = "http://opensource.spotify.com/cefbuilds/{}".format(cef_download_filename)
+        archive_url = "https://cef-builds.spotifycdn.com/{}".format(cef_download_filename)
         tools.get(archive_url)
         os.rename(self.get_cef_distribution_name(), self._source_subfolder)
 
