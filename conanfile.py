@@ -110,9 +110,19 @@ class CEFConan(ConanFile):
         cmake = self._configure_cmake()
         cmake.build()
 
+    # Importing files copies files from the local store to your project.
+    def imports(self):
+        dest = os.getenv("CONAN_IMPORT_PATH", "bin")
+        self.copy("license*", dst=dest, ignore_case=True)
+        self.copy("*.dll", dst=dest, src="bin")
+        self.copy("*.so*", dst=dest, src="bin")
+        self.copy("*.pdb", dst=dest, src="lib")
+        self.copy("*.dylib*", dst=dest, src="lib")
+        self.copy("*.lib*", dst=dest, src="lib")
+        self.copy("*.a*", dst=dest, src="lib")
+
     def package(self):
         cmake = self._configure_cmake()
-        cmake.install()
 
         # Copy headers
         self.copy('*', dst='include/include', src='{}/include'.format(self._source_subfolder))
