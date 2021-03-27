@@ -128,6 +128,8 @@ class CEFConan(ConanFile):
         self.copy('*', dst='include/include', src='{}/include'.format(self._source_subfolder))
 
         # Copy all stuff from the Debug/Release folders in the downloaded cef bundle:
+        if not self.settings.build_type in ['Debug', 'Release']:
+          raise conans.errors.ConanException("Unsupported build_type.")
         dis_folder = "{}/{}".format(self._source_subfolder, self.settings.build_type)
         res_folder = "{}/Resources".format(self._source_subfolder)
         # resource files: taken from cmake/cef_variables (on macosx we would need to convert the COPY_MACOSX_RESOURCES() function)
@@ -138,6 +140,8 @@ class CEFConan(ConanFile):
         if self.settings.os == "Linux":
             # CEF binaries: (Taken from cmake/cef_variables)
             self.copy("libcef.so", dst="lib", src=dis_folder, keep_path=False)
+            if not os.path.exists("{}/libcef.so".format(dis_folder)):
+                raise conans.errors.ConanException("Unable to find libcef.so.")
             self.copy("natives_blob.bin", dst="bin", src=dis_folder, keep_path=False)
             self.copy("snapshot_blob.bin", dst="bin", src=dis_folder, keep_path=False)
             if self.options.use_sandbox:
@@ -147,6 +151,8 @@ class CEFConan(ConanFile):
             # CEF binaries: (Taken from cmake/cef_variables)
             self.copy("*.dll", dst="bin", src=dis_folder, keep_path=False)
             self.copy("libcef.lib", dst="lib", src=dis_folder, keep_path=False)
+            if not os.path.exists("{}/libcef.lib".format(dis_folder)):
+                raise conans.errors.ConanException("Unable to find libcef.so.")
             self.copy("natives_blob.bin", dst="bin", src=dis_folder, keep_path=False)
             self.copy("snapshot_blob.bin", dst="bin", src=dis_folder, keep_path=False)
             if self.options.use_sandbox:
