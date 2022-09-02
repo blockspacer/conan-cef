@@ -108,8 +108,9 @@ class CEFConan(ConanFile):
         return cmake
 
     def build(self):
-        cmake = self._configure_cmake()
-        cmake.build()
+        with tools.vcvars(self.settings, only_diff=False): # https://github.com/conan-io/conan/issues/6577
+            cmake = self._configure_cmake()
+            cmake.build()
 
     # Importing files copies files from the local store to your project.
     def imports(self):
@@ -123,42 +124,43 @@ class CEFConan(ConanFile):
         self.copy("*.a*", dst=dest, src="lib")
 
     def package(self):
-        cmake = self._configure_cmake()
+        with tools.vcvars(self.settings, only_diff=False): # https://github.com/conan-io/conan/issues/6577
+            cmake = self._configure_cmake()
 
-        # Copy headers
-        self.copy('*', dst='include/include', src='{}/include'.format(self._source_subfolder))
+            # Copy headers
+            self.copy('*', dst='include/include', src='{}/include'.format(self._source_subfolder))
 
-        # Copy all stuff from the Debug/Release folders in the downloaded cef bundle:
-        if not self.settings.build_type in ['Debug', 'Release']:
-          raise conans.errors.ConanException("Unsupported build_type.")
-        dis_folder = "{}/{}".format(self._source_subfolder, self.settings.build_type)
-        res_folder = "{}/Resources".format(self._source_subfolder)
-        # resource files: taken from cmake/cef_variables (on macosx we would need to convert the COPY_MACOSX_RESOURCES() function)
-        cef_resources = ["cef.pak", "cef_100_percent.pak", "cef_200_percent.pak", "cef_extensions.pak", "devtools_resources.pak", "icudtl.dat", "locales*"]
-        for res in cef_resources:
-            self.copy(res, dst="bin", src=res_folder, keep_path=True)
+            # Copy all stuff from the Debug/Release folders in the downloaded cef bundle:
+            if not self.settings.build_type in ['Debug', 'Release']:
+            raise conans.errors.ConanException("Unsupported build_type.")
+            dis_folder = "{}/{}".format(self._source_subfolder, self.settings.build_type)
+            res_folder = "{}/Resources".format(self._source_subfolder)
+            # resource files: taken from cmake/cef_variables (on macosx we would need to convert the COPY_MACOSX_RESOURCES() function)
+            cef_resources = ["cef.pak", "cef_100_percent.pak", "cef_200_percent.pak", "cef_extensions.pak", "devtools_resources.pak", "icudtl.dat", "locales*"]
+            for res in cef_resources:
+                self.copy(res, dst="bin", src=res_folder, keep_path=True)
 
-        if self.settings.os == "Linux":
-            # CEF binaries: (Taken from cmake/cef_variables)
-            self.copy("libcef.so", dst="lib", src=dis_folder, keep_path=False)
-            if not os.path.exists("{}/libcef.so".format(dis_folder)):
-                raise conans.errors.ConanException("Unable to find libcef.so.")
-            self.copy("natives_blob.bin", dst="bin", src=dis_folder, keep_path=False)
-            self.copy("snapshot_blob.bin", dst="bin", src=dis_folder, keep_path=False)
-            if self.options.use_sandbox:
-                self.copy("chrome-sandbox", dst="bin", src=dis_folder, keep_path=False)
-            self.copy("*cef_dll_wrapper.a", dst="lib", keep_path=False)
-        if self.settings.os == "Windows":
-            # CEF binaries: (Taken from cmake/cef_variables)
-            self.copy("*.dll", dst="bin", src=dis_folder, keep_path=False)
-            self.copy("libcef.lib", dst="lib", src=dis_folder, keep_path=False)
-            if not os.path.exists("{}/libcef.lib".format(dis_folder)):
-                raise conans.errors.ConanException("Unable to find libcef.so.")
-            self.copy("natives_blob.bin", dst="bin", src=dis_folder, keep_path=False)
-            self.copy("snapshot_blob.bin", dst="bin", src=dis_folder, keep_path=False)
-            if self.options.use_sandbox:
-                self.copy("cef_sandbox.lib", dst="lib", src=dis_folder, keep_path=False)
-            self.copy("*cef_dll_wrapper.lib", dst="lib", keep_path=False)  # libcef_dll_wrapper is somewhere else
+            if self.settings.os == "Linux":
+                # CEF binaries: (Taken from cmake/cef_variables)
+                self.copy("libcef.so", dst="lib", src=dis_folder, keep_path=False)
+                if not os.path.exists("{}/libcef.so".format(dis_folder)):
+                    raise conans.errors.ConanException("Unable to find libcef.so.")
+                self.copy("natives_blob.bin", dst="bin", src=dis_folder, keep_path=False)
+                self.copy("snapshot_blob.bin", dst="bin", src=dis_folder, keep_path=False)
+                if self.options.use_sandbox:
+                    self.copy("chrome-sandbox", dst="bin", src=dis_folder, keep_path=False)
+                self.copy("*cef_dll_wrapper.a", dst="lib", keep_path=False)
+            if self.settings.os == "Windows":
+                # CEF binaries: (Taken from cmake/cef_variables)
+                self.copy("*.dll", dst="bin", src=dis_folder, keep_path=False)
+                self.copy("libcef.lib", dst="lib", src=dis_folder, keep_path=False)
+                if not os.path.exists("{}/libcef.lib".format(dis_folder)):
+                    raise conans.errors.ConanException("Unable to find libcef.so.")
+                self.copy("natives_blob.bin", dst="bin", src=dis_folder, keep_path=False)
+                self.copy("snapshot_blob.bin", dst="bin", src=dis_folder, keep_path=False)
+                if self.options.use_sandbox:
+                    self.copy("cef_sandbox.lib", dst="lib", src=dis_folder, keep_path=False)
+                self.copy("*cef_dll_wrapper.lib", dst="lib", keep_path=False)  # libcef_dll_wrapper is somewhere else
 
     def package_info(self):
         if self.settings.compiler == "Visual Studio":
